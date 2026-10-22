@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { DefaultButton, PrimaryButton, TextField, Dropdown, MessageBar,
   MessageBarType } from 'office-ui-fabric-react';
-import '../styles/designer.css';
+import '../css/designer.css';
 
 export interface Survey { id: string; name: string; surveyTitle: string; }
 export interface Section {
