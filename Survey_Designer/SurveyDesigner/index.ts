@@ -2,9 +2,14 @@ import { IInputs, IOutputs } from "./generated/ManifestTypes";
 import Designer from "../src/components/designer";
 import * as ReactDOM from "react-dom";
 import * as React from "react";
+import { ApiService } from "../src/services/apiservice";
+import { ISurveyDesignerProps, ISurveyDesignerState } from "../src/models/surveyDesignerState";
 
 export class SurveyDesigner implements ComponentFramework.StandardControl<IInputs, IOutputs> {
     private container: HTMLDivElement;
+    private notifyOutputChanged: () => void;
+	private _context: ComponentFramework.Context<IInputs>;
+	private _apiService: ApiService;
 
     /**
      * Empty constructor.
@@ -12,6 +17,8 @@ export class SurveyDesigner implements ComponentFramework.StandardControl<IInput
     constructor() {
         // Empty
     }
+	private props: ISurveyDesignerProps = {
+	}
 
     /**
      * Used to initialize the control instance. Controls can kick off remote server calls and other initialization actions here.
@@ -29,6 +36,7 @@ export class SurveyDesigner implements ComponentFramework.StandardControl<IInput
     ): void {
         this.container = container;
         this.render();
+		this.props.apiService = this._apiService;
     }
 
     private render(): void {
@@ -37,7 +45,7 @@ export class SurveyDesigner implements ComponentFramework.StandardControl<IInput
         }
 
         ReactDOM.render(
-            React.createElement(Designer),
+            React.createElement(Designer, this.props),
             this.container
         );
     }
