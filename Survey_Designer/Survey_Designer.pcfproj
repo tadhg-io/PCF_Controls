@@ -9,7 +9,7 @@
 
   <PropertyGroup>
     <Name>Survey_Designer</Name>
-    <ProjectGuid>65d11589-b8be-4856-9388-5bf2f432ef4c</ProjectGuid>
+    <ProjectGuid>139f8cc3-36c3-4750-8d7c-fc5c3966c8e2</ProjectGuid>
     <OutputPath>$(MSBuildThisFileDirectory)out\controls</OutputPath>
   </PropertyGroup>
 

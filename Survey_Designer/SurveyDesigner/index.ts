@@ -1,9 +1,7 @@
-import * as React from "react";
-import * as ReactDOM from "react-dom";
 import { IInputs, IOutputs } from "./generated/ManifestTypes";
 import Designer from "../src/components/designer";
-import DataSetInterfaces = ComponentFramework.PropertyHelper.DataSetApi;
-type DataSet = ComponentFramework.PropertyTypes.DataSet;
+import * as ReactDOM from "react-dom";
+import * as React from "react";
 
 export class SurveyDesigner implements ComponentFramework.StandardControl<IInputs, IOutputs> {
     private container: HTMLDivElement;
@@ -33,14 +31,6 @@ export class SurveyDesigner implements ComponentFramework.StandardControl<IInput
         this.render();
     }
 
-    /**
-     * Called when any value in the property bag has changed. This includes field values, data-sets, global values such as container height and width, offline status, control metadata values such as label, visible, etc.
-     * @param context The entire property bag available to control via Context Object; It contains values as set up by the customizer mapped to names defined in the manifest, as well as utility functions
-     */
-    public updateView(context: ComponentFramework.Context<IInputs>): void {
-        this.render();
-    }
-
     private render(): void {
         if (!this.container) {
             return;
@@ -50,6 +40,15 @@ export class SurveyDesigner implements ComponentFramework.StandardControl<IInput
             React.createElement(Designer),
             this.container
         );
+    }
+
+
+    /**
+     * Called when any value in the property bag has changed. This includes field values, data-sets, global values such as container height and width, offline status, control metadata values such as label, visible, etc.
+     * @param context The entire property bag available to control via Context Object; It contains values as set up by the customizer mapped to names defined in the manifest, as well as utility functions
+     */
+    public updateView(context: ComponentFramework.Context<IInputs>): void {
+        // Add code to update control view
     }
 
     /**
@@ -65,8 +64,6 @@ export class SurveyDesigner implements ComponentFramework.StandardControl<IInput
      * i.e. cancelling any pending remote calls, removing listeners, etc.
      */
     public destroy(): void {
-        if (this.container) {
-            ReactDOM.unmountComponentAtNode(this.container);
-        }
+        // Add code to cleanup control if necessary
     }
 }
