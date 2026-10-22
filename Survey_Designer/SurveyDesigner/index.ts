@@ -1,11 +1,11 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { IInputs, IOutputs } from "./generated/ManifestTypes";
-import SurveyDesigner from "./components/designer";
+import Designer from "./components/designer";
 import DataSetInterfaces = ComponentFramework.PropertyHelper.DataSetApi;
 type DataSet = ComponentFramework.PropertyTypes.DataSet;
 
-export class MultiLevelList implements ComponentFramework.StandardControl<IInputs, IOutputs> {
+export class SurveyDesigner implements ComponentFramework.StandardControl<IInputs, IOutputs> {
     private container: HTMLDivElement;
 
     /**
@@ -47,7 +47,7 @@ export class MultiLevelList implements ComponentFramework.StandardControl<IInput
         }
 
         ReactDOM.render(
-            React.createElement(SurveyDesigner),
+            React.createElement(Designer),
             this.container
         );
     }

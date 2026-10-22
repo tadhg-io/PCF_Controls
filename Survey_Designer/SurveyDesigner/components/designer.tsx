@@ -65,7 +65,7 @@ const DATA_TYPES = [
 ];
 const fieldStyles = { fieldGroup: { borderRadius: 7 }, root: { minWidth: 0 } };
 
-export default function SurveyDesigner(): React.ReactElement {
+export default function Designer(): React.ReactElement {
   const [tables, setTables] = React.useState<SurveyTables>(() => JSON.parse(JSON.stringify(SAMPLE_DATA)) as SurveyTables);
   const [surveyId, setSurveyId] = React.useState<string | null>(null);
   const [selected, setSelected] = React.useState<Selection | null>(null);
