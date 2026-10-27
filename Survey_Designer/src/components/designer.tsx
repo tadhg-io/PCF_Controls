@@ -104,18 +104,35 @@ export class SurveyDesign extends React.Component<SurveyDesignerProps, SurveyDes
     // get the API service from the props
     this._apiService = props.apiService;  
 
-    this._apiService?.getSections().then((result: any) => {
+    console.log("BEFORE getSections");
 
-          console.log("result", result);
-          // loop through the rsults and build the array
-          result.entities.forEach((t:any) => {
-              let name = t.toc_name;
-              this._sections.push(name);
-          });
+    console.log("apiService:", this._apiService);
 
-        }, (error: any) => {
-          console.log("_apiService error", error);
-        });
+    const promise = this._apiService?.getSections();
+
+    console.log("Promise:", promise);
+
+    promise?.then(
+      (result: any) => {
+        console.log("SUCCESS", result);
+      },
+      (error: any) => {
+        console.log("ERROR", error);
+      }
+    );
+
+    // this._apiService?.getSections().then((result: any) => {
+
+    //   console.log("result", result);
+    //   // loop through the rsults and build the array
+    //   result.entities.forEach((t:any) => {
+    //       let name = t.toc_name;
+    //       this._sections.push(name);
+    //   });
+
+    // }, (error: any) => {
+    //   console.log("_apiService error", error);
+    // });
   }
 
   private get section(): Section | undefined {

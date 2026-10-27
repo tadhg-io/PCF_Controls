@@ -36,6 +36,8 @@ export class SurveyDesigner implements ComponentFramework.StandardControl<IInput
     ): void {
         this.container = container;
         this.render();
+        this._apiService = new ApiService(context);
+
 		this.props.apiService = this._apiService;
     }
 
