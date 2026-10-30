@@ -1,9 +1,14 @@
 export interface IQuestion {
   id: string;
   sectionId: string;
-  questionText: string;
+  name: string;
   internalDescription: string;
+  title: string;
   instructions: string;
-  questionType: string;
+  dataType: string;
+  required: boolean;
   options?: string[];
 }
+
+
+type QuestionType = 'Text' | 'Number' | 'YesNo' | 'Date' | 'Choice';

@@ -1,5 +1,7 @@
 import { ApiService } from "../services/apiservice";
 import { IInputs } from "../../SurveyDesigner/generated/ManifestTypes";
+import { ISection } from "./section";
+import { IQuestion } from "./question";
 
 export interface ISurveyDesignerState {  
 
@@ -9,8 +11,13 @@ export interface ISurveyDesignerState {
     // tableName: string,
     
     // // local variables
-    // tables?: ITable[],
-    // columns?: string[],
+    sections: ISection[];
+    questions?: IQuestion[];
+    selectedSectionId?: string | null;
+    selectedQuestionId?: string | null;
+    selection: Selection;
+    expanded?: string[];
+    dirty?: boolean;
 
     // // outputs
     // selectedValue? : string,
@@ -24,5 +31,9 @@ export interface ISurveyDesignerState {
 
 export interface ISurveyDesignerProps extends ISurveyDesignerState { 
     context?: ComponentFramework.Context<IInputs>;
+    onSave?: (sections: ISection[]) => void;
     apiService?: ApiService;
 }
+
+type Selection = { kind?: 'section'; sectionId?: string } |
+  { kind?: 'question'; sectionId?: string; questionId?: string };

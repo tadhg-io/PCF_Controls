@@ -18,7 +18,9 @@ export class SurveyDesigner implements ComponentFramework.StandardControl<IInput
         // Empty
     }
 	private props: ISurveyDesignerProps = {
-	}
+        sections: [],
+        selection: {}
+    }
 
     /**
      * Used to initialize the control instance. Controls can kick off remote server calls and other initialization actions here.

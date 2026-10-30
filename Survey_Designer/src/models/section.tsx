@@ -7,5 +7,5 @@ export interface ISection {
     internalDescription: string;
     instructions: string;
     surveyId: string;
-    Questions: IQuestion[];
+    questions: IQuestion[];
 }

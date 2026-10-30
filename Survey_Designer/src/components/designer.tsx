@@ -6,144 +6,159 @@ import {
 } from 'office-ui-fabric-react';
 import { ApiService } from "../services/apiservice";
 import { ISection } from '../models/section';
+import { IQuestion } from "../models/question";
+import { ISurveyDesignerProps, ISurveyDesignerState } from "../models/surveyDesignerState";
 
 // Standalone, locally stateful UI. No PCF inputs or Dataverse connection required.
 initializeIcons();
 
-type QuestionType = 'Text' | 'Number' | 'YesNo' | 'Date' | 'Choice';
 
-interface Question {
-  id: string;
-  name: string;
-  prompt: string;
-  help: string;
-  type: QuestionType;
-  required: boolean;
-}
+// interface Question {
+//   id: string;
+//   name: string;
+//   prompt: string;
+//   help: string;
+//   type: QuestionType;
+//   required: boolean;
+// }
 
-interface Section {
-  id: string;
-  name: string;
-  description: string;
-  questions: Question[];
-}
+// interface Section {
+//   id: string;
+//   name: string;
+//   description: string;
+//   questions: Question[];
+// }
 
-type Selection = { kind: 'section'; sectionId: string } |
-  { kind: 'question'; sectionId: string; questionId: string };
-
-const initialSections: Section[] = [
-  {
-    id: 'people', name: 'People at risk', description: 'Identify people who may need assistance during evacuation.',
-    questions: [
-      { id: 'sleep', name: 'Sleeping occupants', prompt: 'How many sleeping occupants are present?', help: 'Enter the maximum number normally present overnight.', type: 'Number', required: true },
-      { id: 'access', name: 'Accessibility needs', prompt: 'Are any occupants likely to require evacuation assistance?', help: 'Include temporary and permanent mobility limitations.', type: 'YesNo', required: true },
-      { id: 'lone', name: 'Lone working', prompt: 'Are there lone workers on the premises?', help: 'Consider out-of-hours and weekend work.', type: 'YesNo', required: false },
-    ],
-  },
-  {
-    id: 'ignition', name: 'Sources of ignition', description: 'Assess common sources of ignition and combustible materials.',
-    questions: [
-      { id: 'electrical', name: 'Electrical inspections', prompt: 'Are electrical installations inspected regularly?', help: 'Review inspection records.', type: 'YesNo', required: true },
-      { id: 'heating', name: 'Heating systems', prompt: 'Describe the heating systems on site.', help: 'Include fuel types and proximity to combustible materials.', type: 'Text', required: false },
-      { id: 'flammable', name: 'Flammable storage', prompt: 'Are flammable materials stored safely?', help: 'Consider liquids, gases and waste.', type: 'YesNo', required: true },
-    ],
-  },
-  {
-    id: 'escape', name: 'Escape routes', description: 'Review routes, exits and evacuation signage.',
-    questions: [
-      { id: 'clear', name: 'Clear routes', prompt: 'Are escape routes clear and unobstructed?', help: 'Check corridors, stairwells and final exits.', type: 'YesNo', required: true },
-      { id: 'exits', name: 'Emergency exits', prompt: 'How many emergency exits are available?', help: 'Count usable exits.', type: 'Number', required: true },
-      { id: 'signage', name: 'Exit signage', prompt: 'Is emergency exit signage adequate?', help: 'Include illuminated signs where applicable.', type: 'Choice', required: false },
-    ],
-  },
-  {
-    id: 'detection', name: 'Detection & warning', description: 'Record fire detection and alarm arrangements.',
-    questions: [
-      { id: 'alarm', name: 'Alarm system', prompt: 'Is an automatic fire alarm installed?', help: 'Record coverage and system type.', type: 'YesNo', required: true },
-      { id: 'test', name: 'Last alarm test', prompt: 'When was the alarm last tested?', help: 'Use the fire logbook.', type: 'Date', required: false },
-    ],
-  },
-];
+// const initialSections: Section[] = [
+//   {
+//     id: 'people', name: 'People at risk', description: 'Identify people who may need assistance during evacuation.',
+//     questions: [
+//       { id: 'sleep', name: 'Sleeping occupants', prompt: 'How many sleeping occupants are present?', help: 'Enter the maximum number normally present overnight.', type: 'Number', required: true },
+//       { id: 'access', name: 'Accessibility needs', prompt: 'Are any occupants likely to require evacuation assistance?', help: 'Include temporary and permanent mobility limitations.', type: 'YesNo', required: true },
+//       { id: 'lone', name: 'Lone working', prompt: 'Are there lone workers on the premises?', help: 'Consider out-of-hours and weekend work.', type: 'YesNo', required: false },
+//     ],
+//   },
+//   {
+//     id: 'ignition', name: 'Sources of ignition', description: 'Assess common sources of ignition and combustible materials.',
+//     questions: [
+//       { id: 'electrical', name: 'Electrical inspections', prompt: 'Are electrical installations inspected regularly?', help: 'Review inspection records.', type: 'YesNo', required: true },
+//       { id: 'heating', name: 'Heating systems', prompt: 'Describe the heating systems on site.', help: 'Include fuel types and proximity to combustible materials.', type: 'Text', required: false },
+//       { id: 'flammable', name: 'Flammable storage', prompt: 'Are flammable materials stored safely?', help: 'Consider liquids, gases and waste.', type: 'YesNo', required: true },
+//     ],
+//   },
+//   {
+//     id: 'escape', name: 'Escape routes', description: 'Review routes, exits and evacuation signage.',
+//     questions: [
+//       { id: 'clear', name: 'Clear routes', prompt: 'Are escape routes clear and unobstructed?', help: 'Check corridors, stairwells and final exits.', type: 'YesNo', required: true },
+//       { id: 'exits', name: 'Emergency exits', prompt: 'How many emergency exits are available?', help: 'Count usable exits.', type: 'Number', required: true },
+//       { id: 'signage', name: 'Exit signage', prompt: 'Is emergency exit signage adequate?', help: 'Include illuminated signs where applicable.', type: 'Choice', required: false },
+//     ],
+//   },
+//   {
+//     id: 'detection', name: 'Detection & warning', description: 'Record fire detection and alarm arrangements.',
+//     questions: [
+//       { id: 'alarm', name: 'Alarm system', prompt: 'Is an automatic fire alarm installed?', help: 'Record coverage and system type.', type: 'YesNo', required: true },
+//       { id: 'test', name: 'Last alarm test', prompt: 'When was the alarm last tested?', help: 'Use the fire logbook.', type: 'Date', required: false },
+//     ],
+//   },
+// ];
 
 const typeOptions: IDropdownOption[] = [
   { key: 'Text', text: 'Text response' }, { key: 'Number', text: 'Number' },
   { key: 'YesNo', text: 'Yes / No' }, { key: 'Date', text: 'Date' },
   { key: 'Choice', text: 'Multiple choice' },
 ];
-const typeIcons: Record<QuestionType, string> = {
+const typeIcons: Record<string, string> = {
   Text: 'TextField', Number: 'NumberField', YesNo: 'CheckboxComposite',
   Date: 'Calendar', Choice: 'BulletedList',
 };
+
 const uid = () => `item-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 
-export interface SurveyDesignerProps {
-  onSave?: (sections: Section[]) => void;
-  apiService?: ApiService;
-}
+// export interface SurveyDesignerProps {
+//   onSave?: (sections: Section[]) => void;
+//   apiService?: ApiService;
+// }
 
-interface SurveyDesignerState {
-  sections: Section[];
-  selection: Selection;
-  expanded: string[];
-  dirty: boolean;
-}
+// interface SurveyDesignerState {
+//   sections: Section[];
+//   selection: Selection;
+//   expanded: string[];
+//   dirty: boolean;
+// }
 
-export class SurveyDesign extends React.Component<SurveyDesignerProps, SurveyDesignerState> {
+export class SurveyDesign extends React.Component<ISurveyDesignerProps, ISurveyDesignerState> {
 
   private _apiService?: ApiService;
   private _sections: string[] = [];
 
-  constructor(props: SurveyDesignerProps) {
+  constructor(props: ISurveyDesignerProps) {
     super(props);
     this.state = {
-      sections: initialSections,
-      selection: { kind: 'question', sectionId: 'people', questionId: 'sleep' },
-      expanded: ['people', 'ignition', 'escape', 'detection'],
+      sections: [],
+      selection: {},
+      expanded: [],
       dirty: false,
     };
     // get the API service from the props
     this._apiService = props.apiService;  
 
-    console.log("BEFORE getSections v8.1");
+    // call the method to populate sections from the API
+    this.populateData();  
 
-    console.log("apiService:", this._apiService);
-
-    const promise = this._apiService?.getSections();
-
-    console.log("Promise:", promise);
-
-    promise?.then(
-      (result: any) => {
-        console.log("SUCCESS", result);
-      },
-      (error: any) => {
-        console.log("ERROR", error);
-      }
-    );
-
-    // this._apiService?.getSections().then((result: any) => {
-
-    //   console.log("result", result);
-    //   // loop through the rsults and build the array
-    //   result.entities.forEach((t:any) => {
-    //       let name = t.toc_name;
-    //       this._sections.push(name);
-    //   });
-
-    // }, (error: any) => {
-    //   console.log("_apiService error", error);
-    // });
   }
 
-  private get section(): Section | undefined {
-    return this.state.sections.find(s => s.id === this.state.selection.sectionId);
+  private populateData = async () => {
+    if (!this._apiService) {
+    console.log("No API service available");
+    return;
   }
 
-  private get question(): Question | undefined {
+  try {
+    // Retrieve both datasets concurrently
+    const [sections, questions] = await Promise.all([
+      this._apiService.getSections(),
+      this._apiService.getQuestions()
+    ]);
+
+    // Group questions by section ID
+    const questionsBySection = new Map<string, IQuestion[]>();
+
+    questions.forEach(question => {
+      const existing = questionsBySection.get(question.sectionId) ?? [];
+
+      existing.push(question);
+
+      questionsBySection.set(question.sectionId, existing);
+    });
+
+    // Attach questions to their parent sections
+    const populatedSections = sections.map(section => ({
+      ...section,
+      questions: questionsBySection.get(section.id) ?? []
+    }));
+
+    console.log("Populated Sections:", populatedSections); // Log the populated sections for debugging
+
+    // Update React state
+    this.setState({
+      sections: populatedSections
+    });
+
+  } catch (error) {
+    console.error("Error populating survey sections:", error);
+  }
+  }
+
+  private get section(): ISection | undefined {
+    return this.state.sections?.find(s => s.id === this.state.selection?.sectionId);
+  }
+
+  private get question(): IQuestion | undefined {
     const section = this.section;
     const selection = this.state.selection;
 
-    if (selection.kind !== 'question') {
+    if (selection?.kind !== 'question') {
       return undefined;
     }
 
@@ -151,10 +166,10 @@ export class SurveyDesign extends React.Component<SurveyDesignerProps, SurveyDes
   }
 
   private get totalQuestions(): number {
-    return this.state.sections.reduce((n, s) => n + s.questions.length, 0);
+    return this.state.sections?.reduce((n, s) => n + (s.questions ?? []).length, 0) ?? 0;
   }
 
-  private updateSection = (patch: Partial<Section>) => {
+  private updateSection = (patch: Partial<ISection>) => {
     const { sectionId } = this.state.selection;
     this.setState(prev => ({
       sections: prev.sections.map(s => s.id === sectionId ? { ...s, ...patch } : s),
@@ -162,7 +177,7 @@ export class SurveyDesign extends React.Component<SurveyDesignerProps, SurveyDes
     }));
   };
 
-  private updateQuestion = (patch: Partial<Question>) => {
+  private updateQuestion = (patch: Partial<IQuestion>) => {
     const { selection } = this.state;
     if (selection.kind !== 'question') return;
     this.setState(prev => ({
@@ -202,8 +217,16 @@ export class SurveyDesign extends React.Component<SurveyDesignerProps, SurveyDes
   private addSection = () => {
     const id = uid();
     this.setState(prev => ({
-      sections: [...prev.sections, { id, name: 'Untitled section', description: '', questions: [] }],
-      expanded: [...prev.expanded, id],
+      sections: [...prev.sections, {
+        id,
+        name: 'Untitled section',
+        sectionTitle: '',
+        internalDescription: '',
+        instructions: '',
+        surveyId: '',
+        questions: [],
+      }],
+      expanded: [...(prev.expanded ?? []), id],
       selection: { kind: 'section', sectionId: id },
       dirty: true,
     }));
@@ -214,9 +237,18 @@ export class SurveyDesign extends React.Component<SurveyDesignerProps, SurveyDes
     this.setState(prev => ({
       sections: prev.sections.map(s => s.id === sectionId ? {
         ...s,
-        questions: [...s.questions, { id, name: 'Untitled question', prompt: '', help: '', type: 'Text', required: false }],
+        questions: [...(s.questions ?? []), {
+          id,
+          sectionId,
+          name: 'Untitled question',
+          internalDescription: '',
+          title: '',
+          instructions: '',
+          dataType: 'Text',
+          required: false,
+        }],
       } : s),
-      expanded: prev.expanded.includes(sectionId) ? prev.expanded : [...prev.expanded, sectionId],
+      expanded: prev.expanded?.includes(sectionId) ? prev.expanded : [...(prev.expanded ?? []), sectionId],
       selection: { kind: 'question', sectionId, questionId: id },
       dirty: true,
     }));
@@ -301,7 +333,8 @@ export class SurveyDesign extends React.Component<SurveyDesignerProps, SurveyDes
           <div className="sd-nav-head"><span className="sd-panel-title">Structure</span><span className="sd-count">{sections.length} sections · {totalQuestions} questions</span></div>
           <div className="sd-nav-scroll">
             {sections.map((s, index) => {
-              const isOpen = expanded.includes(s.id);
+              const questions = s.questions ?? [];
+              const isOpen = expanded?.includes(s.id);
               const selected = selection.kind === 'section' && selection.sectionId === s.id;
               return <div className="sd-section" key={s.id}>
                 <div className={`sd-section-row ${selected ? 'active' : ''}`}
@@ -309,7 +342,7 @@ export class SurveyDesign extends React.Component<SurveyDesignerProps, SurveyDes
                   {this.iconButton(isOpen ? 'ChevronDown' : 'ChevronRight', isOpen ? 'Collapse section' : 'Expand section', e => {
                     e.stopPropagation();
                     this.setState(prev => ({
-                      expanded: isOpen ? prev.expanded.filter(id => id !== s.id) : [...prev.expanded, s.id],
+                      expanded: isOpen ? (prev.expanded ?? []).filter(id => id !== s.id) : [...(prev.expanded ?? []), s.id],
                     }));
                   })}
                   <span className="sd-section-index">{String(index + 1).padStart(2, '0')}</span>
@@ -321,14 +354,14 @@ export class SurveyDesign extends React.Component<SurveyDesignerProps, SurveyDes
                   {this.iconButton('Add', 'Add question', e => { e.stopPropagation(); this.addQuestion(s.id); })}
                 </div>
                 {isOpen && <div className="sd-question-list">
-                  {s.questions.map((q, qi) => <button type="button" key={q.id}
+                  {questions.map((q, qi) => <button type="button" key={q.id}
                     className={`sd-question ${selection.kind === 'question' && selection.questionId === q.id ? 'active' : ''}`}
                     onClick={() => this.setState({ selection: { kind: 'question', sectionId: s.id, questionId: q.id } })}>
-                    <Icon iconName={typeIcons[q.type]} style={{ fontSize: 13, flexShrink: 0 }} />
+                    <Icon iconName={typeIcons[q.dataType]} style={{ fontSize: 13, flexShrink: 0 }} />
                     <span className="sd-question-label" title={q.name}>{q.name}</span>
                     <span className="sd-move">
                       {this.iconButton('ChevronUp', 'Move question up', e => { e.stopPropagation(); this.moveQuestion(s.id, q.id, -1); }, qi === 0)}
-                      {this.iconButton('ChevronDown', 'Move question down', e => { e.stopPropagation(); this.moveQuestion(s.id, q.id, 1); }, qi === s.questions.length - 1)}
+                      {this.iconButton('ChevronDown', 'Move question down', e => { e.stopPropagation(); this.moveQuestion(s.id, q.id, 1); }, qi === questions.length - 1)}
                     </span>
                   </button>)}
                 </div>}
@@ -348,10 +381,10 @@ export class SurveyDesign extends React.Component<SurveyDesignerProps, SurveyDes
                 <div className="sd-group">{this.groupHeading('EditNote', 'Question details', 'How this question appears in the survey')}
                   <div className="sd-fields">
                     <TextField className="sd-field" label="Question name" value={question.name} onChange={(_, v) => this.updateQuestion({ name: v || '' })} />
-                    <Dropdown className="sd-field" label="Answer type" options={typeOptions} selectedKey={question.type}
-                      onChange={(_, option) => { if (option) this.updateQuestion({ type: option.key as QuestionType }); }} />
-                    <TextField className="sd-field sd-span2" label="Question text" value={question.prompt} onChange={(_, v) => this.updateQuestion({ prompt: v || '' })} />
-                    <TextField className="sd-field sd-span2" label="Help text" multiline rows={3} value={question.help} onChange={(_, v) => this.updateQuestion({ help: v || '' })} />
+                    <Dropdown className="sd-field" label="Answer type" options={typeOptions} selectedKey={question.dataType}
+                      onChange={(_, option) => { if (option) this.updateQuestion({ dataType: option.key as string }); }} />
+                    <TextField className="sd-field sd-span2" label="Question text" value={question.title} onChange={(_, v) => this.updateQuestion({ title: v || '' })} />
+                    <TextField className="sd-field sd-span2" label="Help text" multiline rows={3} value={question.instructions} onChange={(_, v) => this.updateQuestion({ instructions: v || '' })} />
                   </div>
                 </div><div className="sd-divider" />
                 <div className="sd-group">{this.groupHeading('Settings', 'Behaviour', 'Response settings')}
@@ -360,7 +393,7 @@ export class SurveyDesign extends React.Component<SurveyDesignerProps, SurveyDes
               </> : <div className="sd-group">{this.groupHeading('Folder', 'Section details', 'Organise questions into meaningful groups')}
                 <div className="sd-fields">
                   <TextField className="sd-field sd-span2" label="Section title" value={section.name} onChange={(_, v) => this.updateSection({ name: v || '' })} />
-                  <TextField className="sd-field sd-span2" label="Description / instructions" multiline rows={4} value={section.description} onChange={(_, v) => this.updateSection({ description: v || '' })} />
+                  <TextField className="sd-field sd-span2" label="Description / instructions" multiline rows={4} value={section.internalDescription} onChange={(_, v) => this.updateSection({ internalDescription: v || '' })} />
                 </div>
               </div>}
             </div></div>
