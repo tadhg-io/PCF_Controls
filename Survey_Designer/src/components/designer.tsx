@@ -5,8 +5,8 @@ import {
   PrimaryButton, TextField, Toggle, initializeIcons,
 } from 'office-ui-fabric-react';
 import { ApiService } from "../services/apiservice";
+import { IQuestion } from '../models/question';
 import { ISection } from '../models/section';
-import { IQuestion } from "../models/question";
 import { ISurveyDesignerProps, ISurveyDesignerState } from "../models/surveyDesignerState";
 
 // Standalone, locally stateful UI. No PCF inputs or Dataverse connection required.
@@ -110,44 +110,44 @@ export class SurveyDesign extends React.Component<ISurveyDesignerProps, ISurveyD
 
   private populateData = async () => {
     if (!this._apiService) {
-    console.log("No API service available");
-    return;
-  }
+      console.log("No API service available");
+      return;
+    }
 
-  try {
-    // Retrieve both datasets concurrently
-    const [sections, questions] = await Promise.all([
-      this._apiService.getSections(),
-      this._apiService.getQuestions()
-    ]);
+    try {
+      // Retrieve both datasets concurrently
+      const [sections, questions] = await Promise.all([
+        this._apiService.getSections(),
+        this._apiService.getQuestions()
+      ]);
 
-    // Group questions by section ID
-    const questionsBySection = new Map<string, IQuestion[]>();
+      // Group questions by section ID
+      const questionsBySection = new Map<string, IQuestion[]>();
 
-    questions.forEach(question => {
-      const existing = questionsBySection.get(question.sectionId) ?? [];
+      questions.forEach(question => {
+        const existing = questionsBySection.get(question.sectionId) ?? [];
 
-      existing.push(question);
+        existing.push(question);
 
-      questionsBySection.set(question.sectionId, existing);
-    });
+        questionsBySection.set(question.sectionId, existing);
+      });
 
-    // Attach questions to their parent sections
-    const populatedSections = sections.map(section => ({
-      ...section,
-      questions: questionsBySection.get(section.id) ?? []
-    }));
+      // Attach questions to their parent sections
+      const populatedSections = sections.map(section => ({
+        ...section,
+        questions: questionsBySection.get(section.id) ?? []
+      }));
 
-    console.log("Populated Sections:", populatedSections); // Log the populated sections for debugging
+      console.log("Populated Sections:", populatedSections); // Log the populated sections for debugging
 
-    // Update React state
-    this.setState({
-      sections: populatedSections
-    });
+      // Update React state
+      this.setState({
+        sections: populatedSections
+      });
 
-  } catch (error) {
-    console.error("Error populating survey sections:", error);
-  }
+    } catch (error) {
+      console.error("Error populating survey sections:", error);
+    }
   }
 
   private get section(): ISection | undefined {
@@ -215,7 +215,7 @@ export class SurveyDesign extends React.Component<ISurveyDesignerProps, ISurveyD
   };
 
   private addSection = () => {
-    const id = uid();
+    const id = "XXX";
     this.setState(prev => ({
       sections: [...prev.sections, {
         id,
@@ -282,6 +282,23 @@ export class SurveyDesign extends React.Component<ISurveyDesignerProps, ISurveyD
   private save = () => {
     const { onSave } = this.props;
     const { sections } = this.state;
+
+    // save the current section
+    if (this.state.selection.kind === 'section') {
+      // get the currently selected section from this.state.selection.sectionId
+      const sectionId = this.state.selection.sectionId;
+      const section = this.state.sections.find(s => s.id === sectionId);
+      // save section using the api service
+      if (section && this._apiService) {
+        this._apiService.updateSection(section)
+          .then(() => {
+            console.log(`Section ${section.name} saved successfully.`);
+          })
+          .catch((error) => {
+            console.error(`Error saving section ${section.name}:`, error);
+          });
+      }
+    }
 
     if (onSave) {
       onSave(sections);

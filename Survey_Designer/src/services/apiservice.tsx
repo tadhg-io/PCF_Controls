@@ -82,4 +82,23 @@ export class ApiService {
         }));
     };
 
-}
+    // function to update a section using the Web API
+    public updateSection = async (section: ISection): Promise<void> => {
+        const sectionId = section.id;
+        const entity = {
+            toc_name: section.name,
+            toc_title: section.sectionTitle,
+            toc_internaldescription: section.internalDescription,
+            toc_instructions: section.instructions,
+            toc_assessmentdefinition: section.surveyId
+        };
+
+        // if id is empty, create a new section
+        if (sectionId == "XXX") {
+            await this._context.webAPI.createRecord("toc_section", entity);
+        } else {
+            await this._context.webAPI.updateRecord("toc_section", sectionId, entity);
+        }
+
+    }
+};
