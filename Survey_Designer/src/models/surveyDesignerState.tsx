@@ -17,6 +17,7 @@ export interface ISurveyDesignerState {
     selectedQuestionId?: string | null;
     selection: Selection;
     expanded?: string[];
+    surveyId: string;
     dirty?: boolean;
 
     // // outputs

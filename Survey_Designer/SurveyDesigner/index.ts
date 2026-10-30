@@ -19,7 +19,8 @@ export class SurveyDesigner implements ComponentFramework.StandardControl<IInput
     }
 	private props: ISurveyDesignerProps = {
         sections: [],
-        selection: {}
+        selection: {},
+        surveyId: ""
     }
 
     /**

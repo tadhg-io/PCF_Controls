@@ -90,7 +90,7 @@ export class ApiService {
             toc_title: section.sectionTitle,
             toc_internaldescription: section.internalDescription,
             toc_instructions: section.instructions,
-            toc_assessmentdefinition: section.surveyId
+            "toc_AssessmentDefinition@odata.bind": `/toc_assessmentdefinitions(${section.surveyId})`
         };
 
         // if id is empty, create a new section

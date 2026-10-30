@@ -97,12 +97,13 @@ export class SurveyDesign extends React.Component<ISurveyDesignerProps, ISurveyD
     this.state = {
       sections: [],
       selection: {},
+      surveyId:(props.context?.mode as any).contextInfo.entityId,
       expanded: [],
       dirty: false,
     };
     // get the API service from the props
     this._apiService = props.apiService;  
-
+    
     // call the method to populate sections from the API
     this.populateData();  
 
@@ -223,7 +224,7 @@ export class SurveyDesign extends React.Component<ISurveyDesignerProps, ISurveyD
         sectionTitle: '',
         internalDescription: '',
         instructions: '',
-        surveyId: '',
+        surveyId: this.state.surveyId,
         questions: [],
       }],
       expanded: [...(prev.expanded ?? []), id],
