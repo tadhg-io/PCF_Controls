@@ -104,7 +104,7 @@ export class SurveyDesign extends React.Component<SurveyDesignerProps, SurveyDes
     // get the API service from the props
     this._apiService = props.apiService;  
 
-    console.log("BEFORE getSections");
+    console.log("BEFORE getSections v8.1");
 
     console.log("apiService:", this._apiService);
 
@@ -290,7 +290,7 @@ export class SurveyDesign extends React.Component<SurveyDesignerProps, SurveyDes
     return <div className="sd-root">
       <header className="sd-top">
         <div className="sd-brand"><span className="sd-logo"><Icon iconName="ClipboardList" /></span>
-          <div><div className="sd-eyebrow">Survey studio /+ {this._sections.length}</div><div className="sd-title">Fire risk assessment</div></div>
+          <div><div className="sd-eyebrow">Survey studio / v8 {this._sections.length}</div><div className="sd-title">Fire risk assessment</div></div>
         </div>
         <div className="sd-top-actions"><span className={`sd-status ${dirty ? 'unsaved' : ''}`}>{dirty ? '● Unsaved changes' : 'All changes saved locally'}</span>
           <PrimaryButton text="Save changes" iconProps={{ iconName: 'Save' }} onClick={this.save} disabled={!dirty} />

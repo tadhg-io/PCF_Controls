@@ -35,10 +35,10 @@ export class SurveyDesigner implements ComponentFramework.StandardControl<IInput
         container: HTMLDivElement
     ): void {
         this.container = container;
-        this.render();
         this._apiService = new ApiService(context);
-
 		this.props.apiService = this._apiService;
+        this.props.context = context;
+        this.render();
     }
 
     private render(): void {
