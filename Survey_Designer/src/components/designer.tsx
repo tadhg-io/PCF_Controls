@@ -234,7 +234,7 @@ export class SurveyDesign extends React.Component<ISurveyDesignerProps, ISurveyD
   };
 
   private addQuestion = (sectionId: string) => {
-    const id = uid();
+    const id = "XXX";
     this.setState(prev => ({
       sections: prev.sections.map(s => s.id === sectionId ? {
         ...s,
@@ -300,6 +300,22 @@ export class SurveyDesign extends React.Component<ISurveyDesignerProps, ISurveyD
           });
       }
     }
+    // else if the current selection is a question, save the question
+    else if (this.state.selection.kind === 'question') {
+      const sectionId = this.state.selection.sectionId;
+      const questionId = this.state.selection.questionId;
+      const question = this.state.sections.find(s => s.id === sectionId)?.questions.find(q => q.id === questionId);
+      // save question using the api service
+      if (question && this._apiService) { 
+        this._apiService.updateQuestion(question)
+          .then(() => {
+            console.log(`Question ${question.name} saved successfully.`);
+          })
+          .catch((error) => {
+            console.error(`Error saving question ${question.name}:`, error);
+          });
+      }
+    }
 
     if (onSave) {
       onSave(sections);
@@ -342,7 +358,7 @@ export class SurveyDesign extends React.Component<ISurveyDesignerProps, ISurveyD
         <div className="sd-brand"><span className="sd-logo"><Icon iconName="ClipboardList" /></span>
           <div><div className="sd-eyebrow">Survey studio / v8 {this._sections.length}</div><div className="sd-title">Fire risk assessment</div></div>
         </div>
-        <div className="sd-top-actions"><span className={`sd-status ${dirty ? 'unsaved' : ''}`}>{dirty ? '● Unsaved changes' : 'All changes saved locally'}</span>
+        <div className="sd-top-actions"><span className={`sd-status ${dirty ? 'unsaved' : ''}`}>{dirty ? '● Unsaved changes' : 'All changes saved'}</span>
           <PrimaryButton text="Save changes" iconProps={{ iconName: 'Save' }} onClick={this.save} disabled={!dirty} />
         </div>
       </header>

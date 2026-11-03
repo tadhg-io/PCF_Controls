@@ -93,7 +93,7 @@ export class ApiService {
             "toc_AssessmentDefinition@odata.bind": `/toc_assessmentdefinitions(${section.surveyId})`
         };
 
-        // if id is empty, create a new section
+        // if id is default, create a new section
         if (sectionId == "XXX") {
             await this._context.webAPI.createRecord("toc_section", entity);
         } else {
@@ -101,4 +101,24 @@ export class ApiService {
         }
 
     }
-};
+
+    // function to update a question using the Web API
+    public updateQuestion = async (question: IQuestion): Promise<void> => {
+        const questionId = question.id;
+        const entity = {
+            toc_name: question.name,
+            toc_title: question.title,
+            toc_internaldescription: question.internalDescription,
+            toc_instructions: question.instructions,
+            toc_datatype: question.dataType,
+            "toc_Section@odata.bind": `/toc_sections(${question.sectionId})`
+        };
+
+        // if id is default, create a new question
+        if (questionId == "XXX") {
+            await this._context.webAPI.createRecord("toc_question", entity);
+        } else {
+            await this._context.webAPI.updateRecord("toc_question", questionId, entity);
+        }
+    }
+}
