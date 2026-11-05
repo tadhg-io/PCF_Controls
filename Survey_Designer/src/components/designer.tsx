@@ -91,6 +91,8 @@ export class SurveyDesign extends React.Component<ISurveyDesignerProps, ISurveyD
 
   private _apiService?: ApiService;
   private _sections: string[] = [];
+  private _canDeleteQuestions: boolean = false;
+  private _canDeleteSections: boolean = false;
 
   constructor(props: ISurveyDesignerProps) {
     super(props);
@@ -106,6 +108,12 @@ export class SurveyDesign extends React.Component<ISurveyDesignerProps, ISurveyD
     
     // call the method to populate sections from the API
     this.populateData();  
+
+    // get delete permissions from the context
+    this._canDeleteQuestions = this.context.utils.hasEntityPrivilege("toc_question", 4, 3);
+    console.log("Can delete questions:", this._canDeleteQuestions);
+    this._canDeleteSections = this.context.utils.hasEntityPrivilege("toc_section", 4, 3);
+    console.log("Can delete sections:", this._canDeleteSections);
 
   }
 
@@ -356,7 +364,7 @@ export class SurveyDesign extends React.Component<ISurveyDesignerProps, ISurveyD
     return <div className="sd-root">
       <header className="sd-top">
         <div className="sd-brand"><span className="sd-logo"><Icon iconName="ClipboardList" /></span>
-          <div><div className="sd-eyebrow">Survey studio / v8 {this._sections.length}</div><div className="sd-title">Fire risk assessment</div></div>
+          <div><div className="sd-eyebrow">Survey studio / local {this._sections.length}</div><div className="sd-title">Fire risk assessment</div></div>
         </div>
         <div className="sd-top-actions"><span className={`sd-status ${dirty ? 'unsaved' : ''}`}>{dirty ? '● Unsaved changes' : 'All changes saved'}</span>
           <PrimaryButton text="Save changes" iconProps={{ iconName: 'Save' }} onClick={this.save} disabled={!dirty} />
