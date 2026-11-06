@@ -24,6 +24,7 @@ export interface ISurveyDesignerState {
     // selectedValue? : string,
 
     // // UX control
+    showDeleteDialog: boolean;
     // isLoading?: boolean,
     // successMessage?: string,
     // errorMessage?: string,

@@ -121,4 +121,14 @@ export class ApiService {
             await this._context.webAPI.updateRecord("toc_question", questionId, entity);
         }
     }
+
+    // function to delete a question using the Web API
+    public deleteQuestion = async (questionId: string): Promise<void> => {
+        await this._context.webAPI.deleteRecord("toc_question", questionId);
+    }
+
+    // function to delete a section using the Web API
+    public deleteSection = async (sectionId: string): Promise<void> => {
+        await this._context.webAPI.deleteRecord("toc_section", sectionId);
+    }
 }

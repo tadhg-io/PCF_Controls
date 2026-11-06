@@ -2,10 +2,11 @@ import * as React from 'react';
 import '../css/designer.css';
 import {
   DefaultButton, Dropdown, Icon, IconButton, IDropdownOption,
-  PrimaryButton, TextField, Toggle, initializeIcons,
+  PrimaryButton, TextField, Toggle, initializeIcons, Dialog,
+  DialogType, DialogFooter
 } from 'office-ui-fabric-react';
 import { ApiService } from "../services/apiservice";
-import { IQuestion } from '../models/question';
+import { IQuestion, QuestionDataType } from '../models/question';
 import { ISection } from '../models/section';
 import { ISurveyDesignerProps, ISurveyDesignerState } from "../models/surveyDesignerState";
 
@@ -63,11 +64,11 @@ initializeIcons();
 //   },
 // ];
 
-const typeOptions: IDropdownOption[] = [
-  { key: 'Text', text: 'Text response' }, { key: 'Number', text: 'Number' },
-  { key: 'YesNo', text: 'Yes / No' }, { key: 'Date', text: 'Date' },
-  { key: 'Choice', text: 'Multiple choice' },
-];
+// const typeOptions: IDropdownOption[] = [
+//   { key: 'Text', text: 'Text response' }, { key: 'Number', text: 'Number' },
+//   { key: 'YesNo', text: 'Yes / No' }, { key: 'Date', text: 'Date' },
+//   { key: 'Choice', text: 'Multiple choice' },
+// ];
 const typeIcons: Record<string, string> = {
   Text: 'TextField', Number: 'NumberField', YesNo: 'CheckboxComposite',
   Date: 'Calendar', Choice: 'BulletedList',
@@ -102,6 +103,7 @@ export class SurveyDesign extends React.Component<ISurveyDesignerProps, ISurveyD
       surveyId:(props.context?.mode as any).contextInfo.entityId,
       expanded: [],
       dirty: false,
+      showDeleteDialog: false
     };
     // get the API service from the props
     this._apiService = props.apiService;  
@@ -110,9 +112,9 @@ export class SurveyDesign extends React.Component<ISurveyDesignerProps, ISurveyD
     this.populateData();  
 
     // get delete permissions from the context
-    this._canDeleteQuestions = this.context.utils.hasEntityPrivilege("toc_question", 4, 3);
+    this._canDeleteQuestions = props.context?.utils.hasEntityPrivilege("toc_question", 4, 3) ?? false;
     console.log("Can delete questions:", this._canDeleteQuestions);
-    this._canDeleteSections = this.context.utils.hasEntityPrivilege("toc_section", 4, 3);
+    this._canDeleteSections = props.context?.utils.hasEntityPrivilege("toc_section", 4, 3) ?? false;
     console.log("Can delete sections:", this._canDeleteSections);
 
   }
@@ -253,7 +255,7 @@ export class SurveyDesign extends React.Component<ISurveyDesignerProps, ISurveyD
           internalDescription: '',
           title: '',
           instructions: '',
-          dataType: 'Text',
+          dataType: QuestionDataType.Text, // default to Text
           required: false,
         }],
       } : s),
@@ -263,29 +265,68 @@ export class SurveyDesign extends React.Component<ISurveyDesignerProps, ISurveyD
     }));
   };
 
-  private deleteSelected = () => {
+  private confirmDelete = () => {
+    this.setState({ showDeleteDialog: true });
+    return;
+  }
+
+  private executeDelete = () => {
+
     const selection = this.state.selection;
     const section = this.section;
     if (!section) return;
 
     if (selection.kind === 'question') {
-      this.setState(prev => ({
-        sections: prev.sections.map(s => s.id === section.id ? {
-          ...s,
-          questions: s.questions.filter(q => q.id !== selection.questionId),
-        } : s),
-        selection: { kind: 'section', sectionId: section.id },
-        dirty: true,
-      }));
-      return;
+      const question = this.question;
+      const questionName = question?.name || 'this question';
+
+      // delete the question using the api service
+      if (this._apiService) {
+        this._apiService.deleteQuestion(selection.questionId?.toString() ?? "")
+          .then(() => {
+            // if delete was successful, remove the question from the state and select the parent section
+            this.setState(prev => ({
+              sections: prev.sections.map(s => s.id === section.id ? {
+                ...s,
+                questions: s.questions.filter(q => q.id !== selection.questionId),
+              } : s),
+              selection: { kind: 'section', sectionId: section.id },
+              dirty: true,
+            }));
+          })
+          .catch((error) => {
+            console.error(`Error deleting question ${questionName}:`, error);
+          });
+      }
+
+      
+    }
+    else if (selection.kind === 'section')
+    {
+      const sectionName = section?.name || 'this section';
+
+      // delete the section using the api service
+      if (this._apiService) {
+        this._apiService.deleteSection(section.id)
+        .then(() => {
+          // if delete was successful, remove the section from the state and clear the selection
+          const remaining = this.state.sections.filter(s => s.id !== section.id);
+          this.setState({
+            sections: remaining,
+            selection: remaining.length ? { kind: 'section', sectionId: remaining[0].id } : { kind: 'section', sectionId: '' },
+            dirty: true,
+          });
+        })
+        .catch((error) => {
+          console.error(`Error deleting section ${section.name}:`, error);
+        });
+
+      }
+      
     }
 
-    const remaining = this.state.sections.filter(s => s.id !== section.id);
-    this.setState({
-      sections: remaining,
-      selection: remaining.length ? { kind: 'section', sectionId: remaining[0].id } : { kind: 'section', sectionId: '' },
-      dirty: true,
-    });
+    // hide the dialog
+    this.setState({ showDeleteDialog: false });
   };
 
   private save = () => {
@@ -364,7 +405,7 @@ export class SurveyDesign extends React.Component<ISurveyDesignerProps, ISurveyD
     return <div className="sd-root">
       <header className="sd-top">
         <div className="sd-brand"><span className="sd-logo"><Icon iconName="ClipboardList" /></span>
-          <div><div className="sd-eyebrow">Survey studio / local {this._sections.length}</div><div className="sd-title">Fire risk assessment</div></div>
+          <div><div className="sd-eyebrow">Survey studio / local version</div><div className="sd-title">Fire risk assessment</div></div>
         </div>
         <div className="sd-top-actions"><span className={`sd-status ${dirty ? 'unsaved' : ''}`}>{dirty ? '● Unsaved changes' : 'All changes saved'}</span>
           <PrimaryButton text="Save changes" iconProps={{ iconName: 'Save' }} onClick={this.save} disabled={!dirty} />
@@ -420,11 +461,32 @@ export class SurveyDesign extends React.Component<ISurveyDesignerProps, ISurveyD
             </div><span className="sd-pill">{question ? 'QUESTION' : 'SECTION'}</span></div>
             <div className="sd-editor-content"><div className="sd-form">
               {question ? <>
-                <div className="sd-group">{this.groupHeading('EditNote', 'Question details', 'How this question appears in the survey')}
+                <div className="sd-group">{this.groupHeading('EditNote', 'Admin details', 'How this question appears internally')}
                   <div className="sd-fields">
                     <TextField className="sd-field" label="Question name" value={question.name} onChange={(_, v) => this.updateQuestion({ name: v || '' })} />
-                    <Dropdown className="sd-field" label="Answer type" options={typeOptions} selectedKey={question.dataType}
-                      onChange={(_, option) => { if (option) this.updateQuestion({ dataType: option.key as string }); }} />
+                    <Dropdown
+                      className="sd-field"
+                      label="Answer type"
+                      options={Object.entries(QuestionDataType)
+                        .filter(([key]) => isNaN(Number(key)))
+                        .map(([key, value]) => ({
+                          key: value as number,
+                          text: key
+                        }))
+                      }
+                      selectedKey={question.dataType}
+                      onChange={(_, option) => {
+                        if (option) {
+                          this.updateQuestion({
+                            dataType: option.key as QuestionDataType
+                          });
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+                <div className="sd-group">{this.groupHeading('EditNote', 'Published details', 'How this question appears in the survey')}
+                  <div className="sd-fields">
                     <TextField className="sd-field sd-span2" label="Question text" value={question.title} onChange={(_, v) => this.updateQuestion({ title: v || '' })} />
                     <TextField className="sd-field sd-span2" label="Help text" multiline rows={3} value={question.instructions} onChange={(_, v) => this.updateQuestion({ instructions: v || '' })} />
                   </div>
@@ -440,11 +502,42 @@ export class SurveyDesign extends React.Component<ISurveyDesignerProps, ISurveyD
               </div>}
             </div></div>
             <div className="sd-editor-foot"><span className="sd-foot-note">Changes are held locally until saved.</span>
-              <DefaultButton text={question ? 'Delete question' : 'Delete section'} iconProps={{ iconName: 'Delete' }} onClick={this.deleteSelected}
-                styles={{ root: { color: '#a44747' } }} /></div>
-          </> : <div className="sd-empty">Add a section to begin designing your survey.</div>}
+              
+              {question ? this._canDeleteQuestions && (
+                <DefaultButton text='Delete question' iconProps={{ iconName: 'Delete' }} onClick={this.confirmDelete}
+                styles={{ root: { color: '#a44747' } }} />
+              ) : this._canDeleteSections && (
+                <DefaultButton text='Delete section' iconProps={{ iconName: 'Delete' }} onClick={this.confirmDelete}
+                styles={{ root: { color: '#a44747' } }} />
+              )}
+
+            </div>
+          </> : <div className="sd-empty">Select a section or question to edit the survey.</div>}
         </main>
       </div>
+      <Dialog
+          hidden={!this.state.showDeleteDialog}
+          onDismiss={() => this.setState({ showDeleteDialog: false })}
+          dialogContentProps={{
+            type: DialogType.normal,
+            title: 'Delete Question',
+            subText: `Are you sure you want to delete "${this.question?.name || this.section?.name || 'this item'}"? This action cannot be undone.`
+          }}
+          modalProps={{
+            isBlocking: true
+          }}
+        >
+          <DialogFooter>
+            <PrimaryButton
+              text="Delete"
+              onClick={this.executeDelete}
+            />
+            <DefaultButton
+              text="Cancel"
+              onClick={() => this.setState({ showDeleteDialog: false })}
+            />
+          </DialogFooter>
+        </Dialog>
     </div>;
   }
 }
