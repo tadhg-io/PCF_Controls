@@ -26,6 +26,7 @@ export class ApiService {
         return await this._context.webAPI.retrieveMultipleRecords("toc_section", odataUrl).then(
 
             async (result) => {
+                console.log(result);
                 let sections: ISection[] = result.entities.map((entity) => {
                     return {
                         id: entity.toc_sectionid,
@@ -33,7 +34,7 @@ export class ApiService {
                         sectionTitle: entity.toc_title,
                         internalDescription: entity.toc_internaldescription,
                         instructions: entity.toc_instructions,
-                        surveyId: entity.toc_assessmentdefinition,
+                        surveyId: entity._toc_assessmentdefinition_value ?? "",
                         questions: [],
                     };
                 });
@@ -78,7 +79,7 @@ export class ApiService {
             internalDescription: entity.toc_internaldescription ?? "",
             instructions: entity.toc_instructions ?? "",
             dataType: entity.toc_datatype,
-            required: false
+            required: false,
         }));
     };
 

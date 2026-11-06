@@ -69,9 +69,12 @@ initializeIcons();
 //   { key: 'YesNo', text: 'Yes / No' }, { key: 'Date', text: 'Date' },
 //   { key: 'Choice', text: 'Multiple choice' },
 // ];
-const typeIcons: Record<string, string> = {
-  Text: 'TextField', Number: 'NumberField', YesNo: 'CheckboxComposite',
-  Date: 'Calendar', Choice: 'BulletedList',
+const typeIcons: Record<QuestionDataType, string> = {
+    [QuestionDataType.Text]: 'TextField',
+    [QuestionDataType.Number]: 'NumberField',
+    [QuestionDataType.Boolean]: 'CheckboxComposite',
+    [QuestionDataType.Option]: 'BulletedList',
+    //[QuestionDataType.Date]: 'Calendar'
 };
 
 const uid = () => `item-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -103,7 +106,9 @@ export class SurveyDesign extends React.Component<ISurveyDesignerProps, ISurveyD
       surveyId:(props.context?.mode as any).contextInfo.entityId,
       expanded: [],
       dirty: false,
-      showDeleteDialog: false
+      showDeleteDialog: false,
+      showErrorDialog: false,
+      errorMessage: "",
     };
     // get the API service from the props
     this._apiService = props.apiService;  
@@ -295,7 +300,7 @@ export class SurveyDesign extends React.Component<ISurveyDesignerProps, ISurveyD
             }));
           })
           .catch((error) => {
-            console.error(`Error deleting question ${questionName}:`, error);
+            this.setState({ showErrorDialog: true, errorMessage: `Error deleting question ${questionName}: ${error}` });
           });
       }
 
@@ -318,7 +323,7 @@ export class SurveyDesign extends React.Component<ISurveyDesignerProps, ISurveyD
           });
         })
         .catch((error) => {
-          console.error(`Error deleting section ${section.name}:`, error);
+          this.setState({ showErrorDialog: true, errorMessage: `Error deleting section ${section.name}: ${error}` });
         });
 
       }
@@ -345,7 +350,7 @@ export class SurveyDesign extends React.Component<ISurveyDesignerProps, ISurveyD
             console.log(`Section ${section.name} saved successfully.`);
           })
           .catch((error) => {
-            console.error(`Error saving section ${section.name}:`, error);
+            this.setState({ showErrorDialog: true, errorMessage: `Error saving section ${section.name}: ${error.message}` });
           });
       }
     }
@@ -361,7 +366,7 @@ export class SurveyDesign extends React.Component<ISurveyDesignerProps, ISurveyD
             console.log(`Question ${question.name} saved successfully.`);
           })
           .catch((error) => {
-            console.error(`Error saving question ${question.name}:`, error);
+            this.setState({ showErrorDialog: true, errorMessage: `Error saving question ${question.name}: ${error}` });
           });
       }
     }
@@ -405,7 +410,7 @@ export class SurveyDesign extends React.Component<ISurveyDesignerProps, ISurveyD
     return <div className="sd-root">
       <header className="sd-top">
         <div className="sd-brand"><span className="sd-logo"><Icon iconName="ClipboardList" /></span>
-          <div><div className="sd-eyebrow">Survey studio / local version</div><div className="sd-title">Fire risk assessment</div></div>
+          <div><div className="sd-eyebrow">Survey studio / locale</div><div className="sd-title">Fire risk assessment</div></div>
         </div>
         <div className="sd-top-actions"><span className={`sd-status ${dirty ? 'unsaved' : ''}`}>{dirty ? '● Unsaved changes' : 'All changes saved'}</span>
           <PrimaryButton text="Save changes" iconProps={{ iconName: 'Save' }} onClick={this.save} disabled={!dirty} />
@@ -494,12 +499,23 @@ export class SurveyDesign extends React.Component<ISurveyDesignerProps, ISurveyD
                 <div className="sd-group">{this.groupHeading('Settings', 'Behaviour', 'Response settings')}
                   <Toggle label="Response required" checked={question.required} onChange={(_, v) => this.updateQuestion({ required: !!v })} />
                 </div>
-              </> : <div className="sd-group">{this.groupHeading('Folder', 'Section details', 'Organise questions into meaningful groups')}
-                <div className="sd-fields">
-                  <TextField className="sd-field sd-span2" label="Section title" value={section.name} onChange={(_, v) => this.updateSection({ name: v || '' })} />
-                  <TextField className="sd-field sd-span2" label="Description / instructions" multiline rows={4} value={section.internalDescription} onChange={(_, v) => this.updateSection({ internalDescription: v || '' })} />
+              </> 
+              : 
+                <>
+                <div className="sd-group">{this.groupHeading('Folder', 'Admin details', 'Internal information to help identify this section')}
+                  <div className="sd-fields">
+                    <TextField className="sd-field sd-span2" label="Section Name" value={section.name} onChange={(_, v) => this.updateSection({ name: v || '' })} />
+                    <TextField className="sd-field sd-span2" label="Description" multiline rows={4} value={section.internalDescription} onChange={(_, v) => this.updateSection({ internalDescription: v || '' })} />
+                  </div>
                 </div>
-              </div>}
+                <div className="sd-group">{this.groupHeading('Folder', 'Published details', 'Information shown to survey respondents')}
+                  <div className="sd-fields">
+                    <TextField className="sd-field sd-span2" label="Section Title" value={section.sectionTitle} onChange={(_, v) => this.updateSection({ sectionTitle: v || '' })} />
+                    <TextField className="sd-field sd-span2" label="Instructions" multiline rows={4} value={section.instructions} onChange={(_, v) => this.updateSection({ instructions: v || '' })} />
+                  </div>
+                </div>
+                </>
+              }
             </div></div>
             <div className="sd-editor-foot"><span className="sd-foot-note">Changes are held locally until saved.</span>
               
@@ -535,6 +551,25 @@ export class SurveyDesign extends React.Component<ISurveyDesignerProps, ISurveyD
             <DefaultButton
               text="Cancel"
               onClick={() => this.setState({ showDeleteDialog: false })}
+            />
+          </DialogFooter>
+        </Dialog>
+      <Dialog
+          hidden={!this.state.showErrorDialog}
+          onDismiss={() => this.setState({ showErrorDialog: false })}
+          dialogContentProps={{
+            type: DialogType.normal,
+            title: 'Error',
+            subText: this.state.errorMessage || 'An error occurred while performing the operation.'
+          }}
+          modalProps={{
+            isBlocking: true
+          }}
+        >
+          <DialogFooter>
+            <DefaultButton
+              text="OK"
+              onClick={() => this.setState({ showErrorDialog: false, errorMessage: '' })}
             />
           </DialogFooter>
         </Dialog>

@@ -21,7 +21,9 @@ export class SurveyDesigner implements ComponentFramework.StandardControl<IInput
         sections: [],
         selection: {},
         surveyId: "",
-        showDeleteDialog: false
+        showDeleteDialog: false,
+        showErrorDialog: false,
+        errorMessage: "",
     }
 
     /**
